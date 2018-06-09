@@ -1,10 +1,11 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
-w1 = np.random.randn(1,3)
-w2 = np.random.randn(3,1)
+w1 = np.random.randn(1,300)
+w2 = np.random.randn(300,1)
 
-w1g = np.zeros((1,3))
-w2g = np.zeros((3,1))
+w1g = np.zeros(w1.shape)
+w2g = np.zeros(w2.shape)
 
 def sig(x, forward=True):
     if forward:
@@ -53,35 +54,47 @@ def nn_backward(inpt, l1, l1_sig, l2, target, learning_rate):
     for j in range(w1g.shape[1]):
         w1[0,j] -= learning_rate * w1g[0,j]
 
-''''''
-sample = np.array([1])
+# data
+x = np.linspace(start=0, stop=2 * np.pi, num=20)
+y = np.sin(x)
+#x = np.linspace(0,1,100)
+#y = x
 
-l2, l1_sig, l1 = nn_forward(sample, w1, w2)
-print(l2)
-loss(nn_forward(sample, w1, w2)[0], sample * sample)
+# pre train plotting
+pre_train = []
+for i in range(x.shape[0]):
+    pre_train.append(nn_forward([x[i]], w1, w2)[0][0])
 
-print(w1)
-print(w2.transpose())
+plt.plot(x, y, label='groudtruth')
+plt.plot(x, pre_train, label='untrained preds')
+plt.legend()
+plt.show()
 
-nn_backward(sample, l1, l1_sig, l2, 2, 0.1)
-
-print(w1)
-print(w2.transpose())
-
-''''''
-
-num_epochs = 100
-learning_rate = 0.1
+# training
+num_epochs = 1000
+learning_rate = 0.001
 
 for i in range(num_epochs):
-    sample = np.array([1])
-    target = np.array([2])
+    for idx in range(x.shape[0]):
+        sample = np.array([x[idx]])
+        target = np.array([y[idx]])
 
-    l2, l1_sig, l1 = nn_forward(sample, w1, w2)
+        l2, l1_sig, l1 = nn_forward(sample, w1, w2)
 
-    nn_backward(sample, l1, l1_sig, l2, target, learning_rate)
+        nn_backward(sample, l1, l1_sig, l2, target, learning_rate)
 
-    print('prediction = ', l2)
     print('loss: ', loss(l2, target))
-    print('w1 = ', w1)
-    print('w2 = ', w2.transpose(), '\n')
+    #print('w1 = ', w1)
+    #print('w2 = ', w2.transpose(), '\n')
+
+# post train plotting
+post_train = []
+for i in range(x.shape[0]):
+    post_train.append(nn_forward([x[i]], w1, w2)[0][0])
+
+plt.plot(x, y, label='groudtruth')
+plt.plot(x, pre_train, label='untrained preds')
+plt.plot(x, post_train, label='trained preds')
+plt.legend()
+plt.show()
+plt.savefig('test.png')
